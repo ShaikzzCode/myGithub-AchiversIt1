@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Js Editor and Compiler</title>
+    <link rel="stylesheet" href="codemirror.css">
+    <script src="codemirror.js"></script>
+</head>
+
+<body>
+    <div class="topToolbar">
+        <span class="titlejs">Jumbo JS</span>
+        <button id="runButton">Run</button>
+    </div>
+
+    <section class="sec1">
+        <div id="editor-container">
+            <div id="line-numbers"></div>
+            <textarea id="editor" placeholder="Enter your JavaScript code here..."></textarea>
+        </div>
+        <section class="sec2">
+            <div id="output-div"></div>
+            <span class="span_console">console output</span>
+            <div id="console-output-div"></div>
+        </section>
+    </section>
+
+
+    <script>
+        const lineNumbersDiv = document.getElementById('line-numbers');
+        const outputDiv = document.getElementById('output-div');
+        const runButton = document.getElementById('runButton');
+        const consoleOutputDiv = document.getElementById('console-output-div');
+        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: 'javascript',
+            lineNumbers: true
+        });
+
+
+
+
+
+        function displayOutput(output) {
+            if (output !== undefined) {
+                outputDiv.style.color = 'black';
+                outputDiv.innerHTML = `<p>Output: ${output}</p>`;
+            }
+        }
+
+        // function displayDocumentWriteOutput(content) {
+        //     outputDiv.innerHTML += content;
+        // }
+        function displayDocumentWriteOutput(content) {
+            const tempContainer = document.createElement('div');
+            tempContainer.appendChild(content);
+            const contentString = tempContainer.innerHTML;
+            outputDiv.innerHTML += contentString;
+        }
+
+        function displayOutputError(error) {
+            outputDiv.style.color = 'red';
+            outputDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+        }
+
+        function captureConsoleLog() {
+            const originalConsoleLog = console.log;
+            console.log = function (message) {
+                originalConsoleLog.call(console, message);
+                consoleOutputDiv.innerHTML += `<p>${message}</p>`;
+            };
+        }
+
+        function captureDocumentWrite() {
+            document.write = function (content) {
+                displayDocumentWriteOutput(content);
+            };
+        }
+
+        function restoreDocumentWrite() {
+            document.write = originalDocumentWrite;
+        }
+
+        function runCode() {
+            outputDiv.innerHTML = ''; // Clear existing output
+            const code = editor.getValue();
+            try {
+                captureConsoleLog();
+                captureDocumentWrite();
+                const result = eval(code);
+                displayOutput(result);
+            } catch (error) {
+                displayOutputError(error);
+            } finally {
+                restoreDocumentWrite();
+            }
+        }
+
+        runButton.addEventListener('click', runCode);
+
+
+    </script>
+</body>
+
+</html>
